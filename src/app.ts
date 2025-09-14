@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { logger } from "./utils/logger";
-import roomRoutes from "./routes/roomRoutes";
+import roomRoutes from "./routes/boardRoutes";
 
 const app = express();
 
@@ -13,6 +13,6 @@ app.get("/", (_req, res) => {
   res.send("✅ Whiteboard Backend Running!");
 });
 
-app.use("/rooms", roomRoutes);
-
+app.use("/boards", roomRoutes);
+console.log("✅ Boards routes registered!");
 export default app;

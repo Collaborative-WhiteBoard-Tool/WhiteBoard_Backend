@@ -1,3 +1,7 @@
+import { drawSegmentSchema } from "../schemas/segmentSchema";
+import { z } from "zod";
+import { drawEventSchema } from "../schemas/boardSchema";
+
 // Mỗi điểm vẽ
 export type DrawPoint = {
     x: number;  // normalized [0..1] theo width
@@ -16,11 +20,7 @@ export type DrawSegment = {
 };
 
 // Payload khi client gửi "draw" (trong lúc kéo chuột)
-export type DrawEvent = {
-    boardId: string;     // whiteboard nào
-    userId: string;      // ai vẽ (sau này có thể show con trỏ / màu bút khác nhau)
-    segment: DrawSegment // đoạn vẽ nhỏ
-};
+export type DrawEvent = z.infer<typeof drawEventSchema>
 
 // Payload khi client gửi "drawEnd" (khi thả chuột, kết thúc 1 stroke)
 export type DrawEndEvent = {
@@ -34,3 +34,5 @@ export type ClearEvent = {
     boardId: string;
     userId: string;
 };
+
+export type { drawSegmentSchema };
