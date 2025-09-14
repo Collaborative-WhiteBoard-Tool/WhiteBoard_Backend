@@ -4,14 +4,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const promise_1 = __importDefault(require("mysql2/promise"));
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+const env_1 = require("./env");
 const pool = promise_1.default.createPool({
-    host: process.env.DB_HOST || "localhost",
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASS || "",
-    database: process.env.DB_NAME || "whiteboard_db",
-    port: Number(process.env.DB_PORT) || 3306,
+    host: env_1.ENV.DB.HOST,
+    user: env_1.ENV.DB.USER,
+    password: env_1.ENV.DB.PASS,
+    database: env_1.ENV.DB.NAME,
+    port: env_1.ENV.DB.PORT,
     waitForConnections: true,
     connectionLimit: 10,
 });
