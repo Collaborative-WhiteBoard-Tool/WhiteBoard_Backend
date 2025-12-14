@@ -14,7 +14,7 @@ export const getBoardId = async (id: string) => {
     return await Boards.findById(id);
 }
 
-export const getBoardWithStrokes = async (boardid: string) => {
+    export const getBoardWithStrokes = async (boardid: string) => {
     const board = await Boards.findById(boardid);
     if(!board) return null;
     // giả sử bạn có strokes service

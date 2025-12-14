@@ -5,9 +5,9 @@ import mongoose from "mongoose";
 export const validateBoard = (socket: Socket, next: any) => {
     console.log("validateBoard ")
     try {
-        const boardId = socket.handshake.query.boardId as string
-            || (socket.data?.boardId as string);
+        const boardId = socket.handshake.query.boardId as string || (socket.data?.boardId as string);
         // ✅ Validate bằng Zod schema
+        if (!boardId) return next(new Error("BoardId is required"));
         boardIdSchema.parse({boardId});
 
         // ✅ Convert sang ObjectId cho đồng bộ DB
