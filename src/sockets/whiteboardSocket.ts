@@ -17,6 +17,7 @@ export const registerWhiteboardHandlers = (io: Server) => {
     io.on("connection", (socket: Socket) => {
         console.log("✅ Client connected:", socket.id);
         console.log("🌐 Handshake URL:", socket.handshake.url);
+
         const boardId = (socket as any).boardId;
         console.log(`✅ Client connected to board: ${boardId}`);
 

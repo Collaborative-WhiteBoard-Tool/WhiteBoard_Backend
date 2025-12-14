@@ -5,10 +5,9 @@ import * as boardController from "../controllers/boardController";
 
 
 const router = Router();
-
+    
 router.post("/createBoard",validate(createBoardSchema, "body") , boardController.createBoard);
 router.put("/:boardId", validate(boardIdSchema, "param"),validate(updateBoardSchema, "body") , boardController.updateBoard);
 router.get("/:boardId", validate(boardIdSchema, "param") , boardController.getBoardData);
-console.log("📌 roomRoutes loaded");
-
+console.log("📌 boardRoutes loaded");
 export default router;

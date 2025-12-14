@@ -7,19 +7,19 @@ import {ApiResponse} from "../utils/ApiResponse";
 import {createBoardDto} from "../dtos/board.dto";
 import {RESPONSE_CODES} from "../constants/responseCodes";
 
-export const handlerJoinBoard = async (socket: Socket, payload: JoinBoardPayload) => {
-    try {
-        const {boardId, userId} = joinBoardSchema.parse(payload);
-        socket.join(boardId.boardId);
-        const strokes = await strokeService.getStrokeByBoard(boardId.boardId);
-        socket.emit("loadBoard", strokes);
-        socket.broadcast.to(boardId.boardId).emit("userJoined", userId);
-        console.log(`User ${userId} joined board ${boardId}`);
-    }catch (err) {
-        console.error("Error on joinBoard", err);
-
-    }
-}
+// export const handlerJoinBoard = async (socket: Socket, payload: JoinBoardPayload) => {
+//     try {
+//         const {boardId, userId} = joinBoardSchema.parse(payload);
+//         socket.join(boardId.boardId);
+//         const strokes = await strokeService.getStrokeByBoard(boardId.boardId);
+//         socket.emit("loadBoard", strokes);
+//         socket.broadcast.to(boardId.boardId).emit(" userJoined", userId);
+//         console.log(`User ${userId} joined board ${boardId}`);
+//     }catch (err) {
+//         console.error("Error on joinBoard", err);
+//
+//     }
+// }
 
 
 export const createBoard = async (req: Request, res: Response) => {
