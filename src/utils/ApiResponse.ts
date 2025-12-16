@@ -1,4 +1,4 @@
-import {RESPONSE_CODES, ResponseCodeKey} from "../constants/responseCodes";
+import {RESPONSE_CODES, ResponseCodeKey} from "../constants/responseCodes.js";
 
 export class ApiResponse<T> {
     code: number;

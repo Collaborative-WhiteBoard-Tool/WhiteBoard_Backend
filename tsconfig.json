@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
+    // "sourceMap": true,
     "target": "ES2022",
     "module": "NodeNext",
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
     "moduleResolution": "NodeNext",
-    "sourceMap": true,
+    "typeRoots": ["./src/types", "./node_modules/@types"],
+    "forceConsistentCasingInFileNames": true,
+    // "rootDir": "./src",
+    "outDir": "dist",
+    "esModuleInterop": true,
+    "strict": true,
     "skipLibCheck": true
   },
   "include": ["src/**/*"],

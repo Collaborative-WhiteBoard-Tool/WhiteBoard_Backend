@@ -1,8 +1,8 @@
 // middleware/validateMiddleware.ts
 import { ZodSchema, ZodError } from "zod";
 import { Request, Response, NextFunction } from "express";
-import {RESPONSE_CODES} from "../constants/responseCodes";
-import {ApiResponse} from "../utils/ApiResponse";
+import {RESPONSE_CODES} from "../constants/responseCodes.js";
+import {ApiResponse} from "../utils/ApiResponse.js";
 
 export const validate = (schema: ZodSchema, location: "body" | "query" | "param") => {
     return (req: Request, res: Response, next: NextFunction) => {
