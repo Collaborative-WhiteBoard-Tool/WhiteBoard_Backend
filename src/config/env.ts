@@ -12,7 +12,7 @@ export const ENV = {
     NAME: process.env.DB_NAME || "whiteboard_db",
   },
   MONGO: {
-    URI: process.env.MONGO_URI || "mongodb://localhost:27017",
-    DB_NAME: process.env.MONGO_DB_NAME || "whiteboard_db",
+    URI: process.env.MONGO_URI,
+    DB_NAME: process.env.MONGO_DB_NAME
   }
 };

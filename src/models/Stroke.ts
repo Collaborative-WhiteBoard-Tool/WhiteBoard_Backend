@@ -1,5 +1,6 @@
 import mongoose, {Schema, Document} from "mongoose";
-import exp from "node:constants";
+import {ObjectId} from "mongodb";
+
 
 export interface Ipoint {
     x: number;
@@ -57,6 +58,39 @@ const StrokeSchema : Schema = new Schema({
     opacity: {type: Number, default: 1},
     layer: {type: Number, default: 0},
 }, {timestamps: true});
+
+
+export interface Point {
+  x: number
+  y: number
+}
+
+export interface Stroke_new {
+  boardId: string
+  userId: string
+  tool: "pen" | "eraser" | "line"
+  color: string
+  width: number
+  points: Point[]
+  createdAt: Date
+}
+//===============================================
+export interface Point {
+  x: number
+  y: number
+}
+
+export interface Stroke_1 {
+  _id?: ObjectId
+  boardId: string
+  userId: string
+  points: Point[]
+  color: string
+  width: number
+  createdAt: Date
+  isDeleted?: boolean
+}
+
 
 export default mongoose.model<IStroke>("Stroke", StrokeSchema)
 

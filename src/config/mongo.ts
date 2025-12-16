@@ -1,15 +1,21 @@
-import mongoose from 'mongoose';
-import { ENV } from './env';
+import {MongoClient, Db} from 'mongodb';
+import { ENV } from './env.js';
+import 'dotenv/config'
 
-export async  function connectMongo(){
+const uri = ENV.MONGO.URI!;
+const client = new MongoClient(uri, {maxPoolSize: 10})
+let db : Db
+export const connectMongo = async () => {
     try {
-        const  uri = ENV.MONGO.URI;
-        await mongoose.connect(uri, {
-            dbName: ENV.MONGO.DB_NAME,
-        });
-        console.log("Connected to MongoDB")
-    }catch (err) {
+        await client.connect()
+        db = client.db("whiteboard_db")
+        console.log("✅ MongoDB connected:", db.databaseName);
+    } catch (err) {
         console.error("❌ MongoDB connection error:", err);
-        process.exit(1);
     }
+}
+
+export const getDB = () => {
+    if(!db) throw new Error("mongo not connected")
+    return db
 }

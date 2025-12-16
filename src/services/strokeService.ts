@@ -1,16 +1,25 @@
-import Stroke, {IStroke} from "../models/Stroke";
-import mongoose, {Types} from "mongoose";
+import { Stroke_1 } from "../models/Stroke.js";
+import { getStrokesByBoard, insertStroke, undoLastStroke } from "../repository/stroke.repository.js";
 
-export const saveStroke = async (strokeData : Partial<IStroke>) => {
-    const stroke = new Stroke(strokeData);
-    return await stroke.save();
+// ======================
+export const createStroke = async (data: Stroke_1) => {
+  return insertStroke({
+    ...data,
+    createdAt: new Date(),
+    isDeleted: false
+  })
 }
 
-export const getStrokeByBoard = async (boardId : string | Types.ObjectId) => {
-    const id = typeof boardId === "string" ? new mongoose.Types.ObjectId(boardId) : boardId;
-    return await Stroke.find({ boardId: id, deleted: false}).sort({timestamp: 1})
+export const loadBoard = async (boardId: string) => {
+  try {
+    const getAll = await getStrokesByBoard(boardId)
+    console.log(getAll)
+    return getAll
+  } catch (error) {
+    console.log(error)
+  }
 }
 
-export const clearBoardStrokes = async (boardId : Types.ObjectId) => {
-    return await Stroke.deleteMany({boardId});
+export const undoStroke = async (boardId: string, userId: string) => {
+  return undoLastStroke(boardId, userId)
 }

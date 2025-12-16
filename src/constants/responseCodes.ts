@@ -1,5 +1,4 @@
-import exp from "node:constants";
-import { HttpStatusCode} from "./HttpStatusCode";
+import { HttpStatusCode} from "./HttpStatusCode.js";
 
 export const RESPONSE_CODES = {
     //SUCCESS

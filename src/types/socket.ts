@@ -1,6 +1,5 @@
-import { drawSegmentSchema } from "../schemas/segmentSchema";
+import { drawSegmentSchema } from "../schemas/segmentSchema.js";
 import { z } from "zod";
-import { drawEventSchema } from "../schemas/boardSchema";
 
 // Mỗi điểm vẽ
 export type DrawPoint = {
@@ -19,8 +18,6 @@ export type DrawSegment = {
     strokeId: string; // định danh nét vẽ (1 nét có nhiều segment)
 };
 
-// Payload khi client gửi "draw" (trong lúc kéo chuột)
-export type DrawEvent = z.infer<typeof drawEventSchema>
 
 // Payload khi client gửi "drawEnd" (khi thả chuột, kết thúc 1 stroke)
 export type DrawEndEvent = {

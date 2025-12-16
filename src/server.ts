@@ -1,14 +1,14 @@
 import http from "http";
 import {Server} from "socket.io";
-import app from "./app";
-import {ENV} from "./config/env";
-import {registerSockets} from "./sockets";
-import {connectMongo} from "./config/mongo";
+import app from "./app.js";
+import {ENV} from "./config/env.js";
+import {registerSockets} from "./sockets/index.js";
+import {connectMongo} from "./config/mongo.js";
 
 const server = http.createServer(app);
 const io = new Server(server, {cors: {origin: "*", methods: ["GET", "POST"]},});
-registerSockets(io);
-connectMongo();
+// registerSockets(io);
+// connectMongo();
 server.listen(ENV.PORT, () => {
     console.log(`🚀Server is running at http:localhost:${ENV.PORT}`);
 });
