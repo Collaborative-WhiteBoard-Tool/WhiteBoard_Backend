@@ -1,22 +1,29 @@
 // middleware/validateMiddleware.ts
-import { ZodSchema, ZodError } from "zod";
+import { ZodSchema, ZodError, ZodType } from "zod";
 import { Request, Response, NextFunction } from "express";
-import {RESPONSE_CODES} from "../constants/responseCodes.js";
-import {ApiResponse} from "../utils/ApiResponse.js";
+import { RESPONSE_CODES } from "../constants/responseCodes.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 
-export const validate = (schema: ZodSchema, location: "body" | "query" | "param") => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        try {
-            if (location === "body") schema.parse(req.body);
-            if (location === "query") schema.parse(req.query);
-            if (location === "param") schema.parse(req.params);
+export const validated = (schema: ZodType<any>, target: "body" | "params" | "query") =>
+    (req: Request, res: Response, next: NextFunction) => {
+        const result = schema.safeParse(req[target]);
 
-            next();
-        } catch (err) {
-            if (err instanceof ZodError) {
-                return res.status(RESPONSE_CODES.VALIDATION_ERROR.httpStatus).json(ApiResponse.error("VALIDATION_ERROR", err.message));
-            }
-            next(err);
+        if (!result.success) {
+            const errors = result.error.issues.map((issue) => ({
+                path: issue.path.join("."),
+                message: issue.message,
+            }));
+            const { httpStatus, message, code } = RESPONSE_CODES.VALIDATION_ERROR
+            return res.status(httpStatus).json({
+                status: "fail",
+                code,
+                message,
+                errors,
+            });
         }
+
+        req.validated = req.validated || {};
+        req.validated[target] = result.data;
+
+        next();
     };
-};
