@@ -37,10 +37,10 @@ model Board {
   title       String
   description String?
   isPublic    Boolean  @default(false)
-
   ownerId     String
   owner       User     @relation("BoardOwner", fields: [ownerId], references: [id])
-
+  data        Json     @default("{}")
+  type        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

@@ -6,11 +6,16 @@ import authRoutes from "./routes/authRouteres.js";
 import strokeRouter from "./routes/strokeRouter.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import AppError from "./utils/appError.js";
+import corsMiddleware from "./middlewares/corsMiddleware.js";
+
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(logger);
+
+// app.use(corsMiddleware)
 
 app.use("/boards", roomRoutes);
 app.use("/auth", authRoutes);

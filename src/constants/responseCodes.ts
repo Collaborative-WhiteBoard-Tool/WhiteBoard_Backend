@@ -21,9 +21,13 @@ export const RESPONSE_CODES = {
   //   DUPLICATE_RESOURCE: { code: 2103, message: "Resource already exists" },
 
   //   // 🔒 Authentication & Authorization
+  ACCOUNT_NOT_REGISTERED: { httpStatus: HttpStatusCode.NOT_FOUND, code: 4005, message: "This account is not registered!" },
+  PASSWORD_INCORRECT: { httpStatus: HttpStatusCode.NOT_FOUND, code: 4005, message: "Password incorrect!" },
   EMAIL_EXISTS: { httpStatus: HttpStatusCode.CONFLICT, code: 4001, message: "Email already exists" },
   USERNAME_EXISTS: { httpStatus: HttpStatusCode.CONFLICT, code: 4002, message: "Username already exists" },
   UNAUTHORIZED: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4003, message: "INVALID_CREDENTIALS" },
+  FORBIDDEN: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4030, message: "Forbidden!" },
+  NOT_ALLOWED: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4031, message: "Not allowed!" },
   // TOKEN
   MALFORMED_TOKEN: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4101, message: "Malformed token payload", },
   EXPIRED_TOKEN: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4102, message: "Token expired" },
@@ -35,6 +39,9 @@ export const RESPONSE_CODES = {
   DATABASE_ERROR: { httpStatus: HttpStatusCode.INTERNAL_SERVER_ERROR, code: 5001, message: "Database error" },
   //   SERVICE_UNAVAILABLE: { code: 5002, message: "Service temporarily unavailable" },
 
+
+  // CLOUDINARY - IMAGE
+  JUST_ALLOW_IMAGE: { httpStatus: HttpStatusCode.BAD_REQUEST, code: 4009, message: "Only images are allowed" }
 
 } as const;
 export type ResponseCodeKey = keyof typeof RESPONSE_CODES;
