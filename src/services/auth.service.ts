@@ -1,13 +1,14 @@
 import prisma from "../config/prisma.js";
+import { RESPONSE_CODES } from "../constants/responseCodes.js";
 import { registerRepository } from "../repository/auth.repository.js";
-import { CreateUserDTO } from "../schemas/userSchema.js";
+import { LoginDTO, RegisterDTO } from "../schemas/userSchema.js";
 import { AuthResponse } from "../types/auth.type.js";
 import AppError from "../utils/appError.js"
-import { generateAccessToken, generateRefreshToken, hashPassword } from "../utils/auth.js"
+import { comparePassword, generateAccessToken, generateRefreshToken, hashPassword } from "../utils/auth.js"
 
 
 
-export const registerService = async (payload: CreateUserDTO): Promise<AuthResponse> => {
+export const registerService = async (payload: RegisterDTO): Promise<AuthResponse> => {
 
     console.log("Register ")
     const [existingEmail, existingUsername] = await Promise.all([
@@ -22,7 +23,7 @@ export const registerService = async (payload: CreateUserDTO): Promise<AuthRespo
         throw new AppError("EMAIL_EXISTS", [
             {
                 field: "email",
-                message: "Email already exists"
+                message: RESPONSE_CODES.EMAIL_EXISTS.message
             }
         ])
     }
@@ -30,7 +31,7 @@ export const registerService = async (payload: CreateUserDTO): Promise<AuthRespo
         throw new AppError("USERNAME_EXISTS", [
             {
                 field: "username",
-                message: "Username already exists"
+                message: RESPONSE_CODES.USERNAME_EXISTS.message
             }
         ])
     }
@@ -48,3 +49,28 @@ export const registerService = async (payload: CreateUserDTO): Promise<AuthRespo
 
 };
 
+
+
+export const loginService = async (payload: LoginDTO): Promise<AuthResponse> => {
+    const user = await prisma.user.findUnique({
+        where: { email: payload.email }
+    })
+    if (!user) {
+        throw new AppError("ACCOUNT_NOT_REGISTERED", [{
+            field: "email",
+            message: RESPONSE_CODES.ACCOUNT_NOT_REGISTERED.message
+        }])
+    }
+    const isMatch = await comparePassword(payload.password, user.password)
+    if (!isMatch) {
+        throw new AppError("PASSWORD_INCORRECT", [{
+            field: "password",
+            message: RESPONSE_CODES.PASSWORD_INCORRECT.message
+        }])
+    }
+    const { password: _pw, ...safeUser } = user
+    const accessToken = generateAccessToken({ id: user.id, email: user.email })
+    const refreshToken = generateRefreshToken({ id: user.id, email: user.email })
+    // prisma.re
+    return { user: safeUser, accessToken, refreshToken }
+}

@@ -27,7 +27,7 @@ const errorHandler = (
         status: "fail",
         code,
         message,
-        error: err.errors
+        errors: err.errors
         // stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
 };
