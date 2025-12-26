@@ -41,6 +41,7 @@ export const getUserWhiteboardsController = async (req: Request, res: Response, 
         const limti = Number(req.params?.limit) || 8
         const allBoard = await getUserWhiteboardsService(userId, page, limti)
         res.status(200).json(ApiResponse.success("SUCCESS", allBoard))
+        console.log('')
     } catch (error) {
         next(error)
     }
