@@ -1,18 +1,17 @@
-import prisma from "../config/prisma.js"
-import { countBoards, createBoardRepository, findBoards, getBoardByIdRepository, getUserWhiteboardsRepository } from "../repository/board.repository.js"
+import { createBoardRepository, getBoardByIdRepository, getUserWhiteboardsRepository } from "../repository/board.repository.js"
 import { CreateNewBoardDTO } from "../schemas/boardSchema.js"
-import { ListBoardsResponse, WhiteboardResponse } from "../types/whiteboard.type.js"
+import { BoardResponse } from "../types/whiteboard.type.js"
 
-export const getAllBoards = async (page: number, limit: number): Promise<ListBoardsResponse> => {
-  const skip = (page - 1) * limit
-  const [boards, total] = await Promise.all([
-    findBoards(skip, limit),
-    countBoards()
-  ])
-  return { boards, total, page, limit, totalPages: Math.ceil(total / limit) }
-}
+// export const getAllBoards = async (page: number, limit: number): Promise<ListBoardsResponseData> => {
+//   const skip = (page - 1) * limit
+//   const [boards, total] = await Promise.all([
+//     findBoards(skip, limit),
+//     countBoards()
+//   ])
+//   return { boards, total, page, limit, totalPages: Math.ceil(total / limit) }
+// }
 
-export const createBoardService = async (ownerId: string, payload: CreateNewBoardDTO): Promise<WhiteboardResponse> => {
+export const createBoardService = async (ownerId: string, payload: CreateNewBoardDTO): Promise<BoardResponse> => {
   return await createBoardRepository(ownerId, payload)
 }
 

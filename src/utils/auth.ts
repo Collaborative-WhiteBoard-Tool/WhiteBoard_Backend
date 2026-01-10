@@ -7,7 +7,6 @@ import { ENV } from "../config/env.js";
 const { JsonWebTokenError, TokenExpiredError } = jwt
 
 const SALT_ROUNDS = 10
-const JWT_EXPIRE = process.env.JWT_EXPIRE
 const JWT_SECRET = ENV.JWT.JWT_SECRET!
 const JWT_REFRESH_SECRET = ENV.JWT.JWT_REFRESH_SECRET!
 
@@ -60,8 +59,8 @@ export const verifyAccessToken = (token: string): JwtUserPayload | undefined => 
 export const verifyRefreshToken = (token: string): JwtUserPayload => {
     try {
         return jwt.verify(token, JWT_REFRESH_SECRET) as JwtUserPayload;
-    } catch (error: any) {
-        console.log('Invalid or expired token: ', error.name)
+    } catch (error: unknown) {
+        console.log('Invalid or expired token: ', error)
         throw new AppError("INVALID_TOKEN");
     }
 };

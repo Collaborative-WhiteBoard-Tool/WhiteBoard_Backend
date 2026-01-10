@@ -2,19 +2,23 @@ import { NextFunction, Request, Response } from "express";
 import AppError from "../../utils/appError.js";
 import { verifyAccessToken } from "../../utils/auth.js";
 
+
+
 export const protect = (req: Request, res: Response, next: NextFunction) => {
-    const headerAuth = req.headers.authorization
-    if (!headerAuth || !headerAuth.startsWith("Bearer")) {
-        return next(new AppError("UNAUTHORIZED"))
+    // cookie-parser phải được dùng trước middleware này
+    const accessToken = req.cookies?.accessToken;
+
+    if (!accessToken) {
+        return next(new AppError('UNAUTHORIZED'));
     }
-    const token = headerAuth.split(" ")[1]
+
     try {
-        const decoded = verifyAccessToken(token)
-        req.user = decoded
-        next()
+        const decoded = verifyAccessToken(accessToken);
+        req.user = decoded; // userId, role, ...
+        next();
     } catch (error) {
-        console.log('error token: ', error)
-        return next(new AppError("INVALID_TOKEN"))
+        console.log('Invalid access token:', error);
+        return next(new AppError('INVALID_TOKEN',));
     }
 
 }

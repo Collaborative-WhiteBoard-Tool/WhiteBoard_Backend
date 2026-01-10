@@ -41,7 +41,10 @@ export const RESPONSE_CODES = {
 
 
   // CLOUDINARY - IMAGE
-  JUST_ALLOW_IMAGE: { httpStatus: HttpStatusCode.BAD_REQUEST, code: 4009, message: "Only images are allowed" }
+  JUST_ALLOW_IMAGE: { httpStatus: HttpStatusCode.BAD_REQUEST, code: 4009, message: "Only images are allowed" },
+
+  // DATABASE
+  CANNOT_CONNECT_MONGODB: { httpStatus: HttpStatusCode.BAD_GATEWAY, code: 5020, message: "Can not connect mongodb!" }
 
 } as const;
 export type ResponseCodeKey = keyof typeof RESPONSE_CODES;

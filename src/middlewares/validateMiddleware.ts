@@ -1,10 +1,9 @@
 // middleware/validateMiddleware.ts
-import { ZodSchema, ZodError, ZodType } from "zod";
+import { ZodType } from "zod";
 import { Request, Response, NextFunction } from "express";
 import { RESPONSE_CODES } from "../constants/responseCodes.js";
-import { ApiResponse } from "../utils/apiResponse.js";
 
-export const validated = (schema: ZodType<any>, target: "body" | "params" | "query") =>
+export const validated = (schema: ZodType<unknown>, target: "body" | "params" | "query") =>
     (req: Request, res: Response, next: NextFunction) => {
         const result = schema.safeParse(req[target]);
 

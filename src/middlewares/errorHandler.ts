@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import AppError from '../utils/appError.js';
 import { RESPONSE_CODES } from '../constants/responseCodes.js';
 
@@ -6,8 +6,7 @@ import { RESPONSE_CODES } from '../constants/responseCodes.js';
 const errorHandler = (
     err: AppError,
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
 ) => {
     //Lỗi ko kiểm soát
     //Server Error

@@ -1,6 +1,6 @@
 import prisma from "../config/prisma.js";
 import { RESPONSE_CODES } from "../constants/responseCodes.js";
-import { registerRepository } from "../repository/auth.repository.js";
+import { findUserPublicById, registerRepository } from "../repository/auth.repository.js";
 import { LoginDTO, RegisterDTO } from "../schemas/userSchema.js";
 import { AuthResponse } from "../types/auth.type.js";
 import AppError from "../utils/appError.js"
@@ -73,4 +73,8 @@ export const loginService = async (payload: LoginDTO): Promise<AuthResponse> => 
     const refreshToken = generateRefreshToken({ id: user.id, email: user.email })
     // prisma.re
     return { user: safeUser, accessToken, refreshToken }
+}
+
+export const findUserById = async (id: string) => {
+    return await findUserPublicById(id)
 }

@@ -1,4 +1,4 @@
-import { RESPONSE_CODES, ResponseCodeKey } from "../constants/responseCodes.js";
+import { ResponseCodeKey } from "../constants/responseCodes.js";
 
 class AppError extends Error {
     public key: ResponseCodeKey;

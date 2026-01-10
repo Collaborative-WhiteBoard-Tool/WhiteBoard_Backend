@@ -1,6 +1,25 @@
 import { z } from "zod";
 import { BoardTypeEnum } from "../constants/BoardTypeEnum.js";
 
+
+export const BoardDBSchema = z.object({
+    id: z.string().cuid(),
+    title: z.string().min(3).max(100),
+    description: z.string().max(500).nullable(),
+    isPublic: z.boolean(),
+    ownerId: z.string(),
+    type: z.string().nullable(),
+
+    // Whiteboard data (canvas, shapes, paths...)
+    data: z.record(z.string(), z.any()),
+
+    createdAt: z.date(),
+    updatedAt: z.date(),
+});
+
+export type BoardDB = z.infer<typeof BoardDBSchema>;
+
+
 export const createNewBoardSchema = z.object({
     title: z
         .string()
