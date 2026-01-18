@@ -17,6 +17,7 @@ export const RESPONSE_CODES = {
   // // 📌 Business Errors
   BOARD_NOT_FOUND: { httpStatus: HttpStatusCode.NOT_FOUND, code: 3000, message: "Board not found" },
   STROKE_NOT_FOUND: { httpStatus: HttpStatusCode.NOT_FOUND, code: 3001, message: "Stroke not found" },
+  USER_NOT_FOUND: { httpStatus: HttpStatusCode.NOT_FOUND, code: 3002, message: "User not found" },
   //   USER_NOT_FOUND: { code: 2102, message: "User not found" },
   //   DUPLICATE_RESOURCE: { code: 2103, message: "Resource already exists" },
 

@@ -12,6 +12,7 @@ export class PresenceService {
     async addUser(whiteboardId: string, presence: UserPresence): Promise<void> {
         const key = `presence:${whiteboardId}`;
         const value = JSON.stringify(presence);
+        console.log('value stringify', value)
 
         await this.redis.hset(key, presence.userId, value);
         await this.redis.expire(key, this.TTL);
@@ -27,7 +28,6 @@ export class PresenceService {
     async getUsers(whiteboardId: string): Promise<UserPresence[]> {
         const key = `presence:${whiteboardId}`;
         const data = await this.redis.hgetall(key);
-
         return Object.values(data).map(v => JSON.parse(v));
     }
 

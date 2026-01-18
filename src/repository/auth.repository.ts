@@ -24,3 +24,4 @@ export const findUserPublicById = async (id: string): Promise<SafeUser> => {
     const { password: _pw, ...safeUser } = user
     return safeUser
 }
+

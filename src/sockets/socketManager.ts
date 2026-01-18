@@ -13,6 +13,8 @@ import { checkAccess, incrementVersion } from "../repository/board.repository.js
 import { ZodError } from "zod";
 import { canvasRepository } from "../repository/canvas.repository.js";
 import cookie from 'cookie';
+import { findUserPublicById } from "../repository/auth.repository.js";
+import AppError from "../utils/appError.js";
 
 export class SocketManager {
     private io: SocketServer;
@@ -104,12 +106,17 @@ export class SocketManager {
                 if (!payload) {
                     return next(new Error('Invalid token payload'));
                 }
-
+                const user = await findUserPublicById(payload.id)
+                if (!user) {
+                    return next(new AppError("USER_NOT_FOUND"))
+                }
                 // Gán thông tin vào socket để dùng ở các event sau
                 socket.userId = payload.id;
-                socket.userName = payload.email?.split('@')[0] || 'Unknown';
 
-                console.log(`✅ Socket authenticated via Cookie: ${socket.id}, User: ${socket.userId}`);
+                socket.userName = user.username;
+                socket.displayName = user.displayName
+
+                console.log(`✅ Socket authenticated via Cookie: ${socket.id}, User: ${socket.userId}, ${socket.displayName}`);
                 next();
             } catch (error) {
                 console.error('⚠️ Socket authentication error:', error);
@@ -200,13 +207,16 @@ export class SocketManager {
             }
 
             // Join the room
-            socket.whiteBoardId = whiteboardId;
-            await socket.join(whiteboardId);
+            if (socket.whiteBoardId !== whiteboardId) {
+                socket.whiteBoardId = whiteboardId;
+                await socket.join(whiteboardId);
+            }
 
             // Add user to presence
             const presence: UserPresence = {
                 userId: socket.userId!,
-                username: socket.userName!,
+                userName: socket.userName!,
+                displayName: socket.displayName!,
                 socketId: socket.id,
                 color: this.generateUserColor(socket.userId!),
                 lastSeen: Date.now(),
@@ -302,6 +312,7 @@ export class SocketManager {
                 ...(data as Record<string, unknown>),
                 userId: socket.userId,
                 username: socket.userName,
+                displayname: socket.displayName,
                 timestamp: Date.now(),
             });
 
@@ -378,6 +389,7 @@ export class SocketManager {
                 ...stroke,
                 userId: socket.userId!,
                 username: socket.userName!,
+                displayname: socket.displayName
             }));
 
             // Rate limit check (count all strokes in batch)
@@ -396,8 +408,12 @@ export class SocketManager {
             // Save to database immediately (batch is already optimized)
             await canvasRepository.saveBatch(batch);
 
+            // Gửi cho NGƯỜI KHÁC trong phòng
             // Broadcast to others
-            socket.to(socket.whiteBoardId).emit(SocketEvents.BATCH_DRAWN, batch);
+            // socket.to(socket.whiteBoardId).emit(SocketEvents.BATCH_DRAWN, batch);
+            this.io.to(socket.whiteBoardId).emit(SocketEvents.BATCH_DRAWN, batch)
+            // Gửi XÁC NHẬN cho CHÍNH NGƯỜI VẼ (Quan trọng!)
+            socket.emit('batch_confirmed', { batchId: batch.batchId });
 
             // Track for snapshot
             const count =
@@ -443,6 +459,7 @@ export class SocketManager {
                 ...(data as Record<string, unknown>),
                 userId: socket.userId,
                 username: socket.userName,
+                displayname: socket.displayName,
                 timestamp: Date.now(),
             });
 

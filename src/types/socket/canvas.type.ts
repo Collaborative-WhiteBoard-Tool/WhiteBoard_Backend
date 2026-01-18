@@ -51,7 +51,8 @@ export type Cursor = z.infer<typeof CursorSchema>;
 // User presence
 export interface UserPresence {
     userId: string;
-    username: string;
+    userName: string;
+    displayName: string;
     socketId: string;
     color: string;
     lastSeen: number;

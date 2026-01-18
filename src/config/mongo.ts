@@ -33,7 +33,7 @@ export const getDB = () => {
 
 const createIndexes = async () => {
     db = getDB()
-    db.collection("strokes").createIndex({ boardId: 1, createdAt: 1 })
+    db.collection("strokes").createIndex({ whiteboardId: 1, createdAt: 1 })
 
     ////////// RefreshTokens collection indexes
     // await db.collection('refreshTokens').createIndex({ token: 1 }, { unique: true });
