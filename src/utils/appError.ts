@@ -7,7 +7,6 @@ class AppError extends Error {
 
     constructor(key: ResponseCodeKey, errors?: { field: string, message: string }[]) {
         super(key);
-        // super(RESPONSE_CODES[key].message);
         this.key = key;
         this.isOperational = true
         this.errors = errors

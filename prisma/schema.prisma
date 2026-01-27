@@ -16,12 +16,16 @@ datasource db {
 
 model User {
   id           String   @id @default(cuid())
-  username     String   @unique
+  username     String?   @unique
   email        String   @unique
-  password     String
+  password     String?
   displayName  String?
   avatar       String?
   avatarID     String? 
+
+  googleId     String?  @unique
+  provider     String?  @default("local") // 'local' | 'google'
+  emailVerified Boolean @default(false)
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -30,6 +34,8 @@ model User {
   ownedBoards        Board[]              @relation("BoardOwner")
   boardCollaborators BoardCollaborator[]
 
+  @@index([email])
+  @@index([googleId])
   @@map("users")
 }
 
@@ -44,6 +50,11 @@ model Board {
   data        Json     @default("{}")
   type        String?
   version     Int      @default(1)
+
+  thumbnailUrl      String?
+  thumbnailPublicId String?   
+  thumbnailUpdatedAt DateTime?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

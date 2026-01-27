@@ -29,10 +29,16 @@ export const RESPONSE_CODES = {
   UNAUTHORIZED: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4003, message: "INVALID_CREDENTIALS" },
   FORBIDDEN: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4030, message: "Forbidden!" },
   NOT_ALLOWED: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4031, message: "Not allowed!" },
+  PASSWORD_NOT_SET: { httpStatus: HttpStatusCode.BAD_REQUEST, code: 4032, message: "PASSWORD_NOT_SET!" },
+  GOOGLE_AUTH_FAILED: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4033, message: "Google authentication failed!" },
+  OAUTH_EMAIL_NOT_VERIFIED: { httpStatus: HttpStatusCode.FORBIDDEN, code: 4034, message: "Email not verified by OAuth provider!" },
+  OAUTH_NO_EMAIL: { httpStatus: HttpStatusCode.BAD_REQUEST, code: 4034, message: "No email provided by OAuth provider!" },
   // TOKEN
   MALFORMED_TOKEN: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4101, message: "Malformed token payload", },
   EXPIRED_TOKEN: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4102, message: "Token expired" },
   INVALID_TOKEN: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4103, message: "Invalid token" },
+  TOKEN_REFRESHED: { httpStatus: HttpStatusCode.OK, code: 4104, message: "TOKEN_REFRESHED" },
+  REFRESH_TOKEN_NOT_FOUND: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4105, message: "REFRESH_TOKEN_NOT_FOUND" },
   //   FORBIDDEN: { httpStatus: HttpStatusCode.UNAUTHORIZED, code: 4001, message: "Forbidden" },
 
   //   // 💥 Server Errors

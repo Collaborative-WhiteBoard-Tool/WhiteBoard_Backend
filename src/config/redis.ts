@@ -1,4 +1,5 @@
 import { Redis } from "ioredis";
+import { ENV } from "./env.js";
 
 let redisClient: Redis;
 let redisSubscriber: Redis;
@@ -6,8 +7,8 @@ let redisPublisher: Redis;
 
 export const connectRedis = async (): Promise<void> => {
     const redisConfig = {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: parseInt(process.env.REDIS_PORT || '6379'),
+        host: ENV.REDIS.REDIS_HOST || 'localhost',
+        port: parseInt(ENV.REDIS.REDIS_PORT || '6379'),
         password: process.env.REDIS_PASSWORD || undefined,
         retryStrategy: (times: number) => {
             const delay = Math.min(times * 50, 2000);

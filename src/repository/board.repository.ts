@@ -1,5 +1,6 @@
+import cloudinary from "../config/cloudinary.js"
 import prisma from "../config/prisma.js"
-import { CreateNewBoardDTO } from "../schemas/boardSchema.js"
+import { CreateNewBoardDTO, UpdateThumbnailDTO } from "../schemas/boardSchema.js"
 import { BoardResponse, ListBoardsResponse } from "../types/whiteboard.type.js"
 import AppError from "../utils/appError.js"
 
@@ -176,6 +177,7 @@ export const getUserWhiteboardsRepository = async (
                 description: true,
                 isPublic: true,
                 type: true,
+                thumbnailUrl: true,
                 createdAt: true,
                 updatedAt: true,
                 owner: {
@@ -224,3 +226,64 @@ export const getUserWhiteboardsRepository = async (
 
     return { whiteboards, total, page, limit };
 };
+
+
+export const updateThumbnail = async (
+    boardId: string,
+    data: UpdateThumbnailDTO,
+    oldPublicId?: string
+): Promise<void> => {
+    // 1. Kiểm tra nếu URL mới giống hệt URL cũ thì bỏ qua (tránh tốn tài nguyên)
+    // Cái này nên check ở Controller hoặc Service trước khi gọi hàm này
+    console.log('Update thumbnail')
+    // 2. Xóa ảnh cũ trên Cloudinary
+    if (oldPublicId && oldPublicId !== data.thumbnailPublicId) {
+        try {
+            // Cloudinary destroy trả về { result: 'ok' } nếu thành công
+            const result = await cloudinary.uploader.destroy(oldPublicId);
+            console.log(`✅ Cloudinary: ${result.result} for ID: ${oldPublicId}`);
+        } catch (error) {
+            // Log lỗi nhưng không chặn việc update DB
+            console.error('❌ Cloudinary Delete Error:', error);
+        }
+    }
+
+    // 3. Cập nhật Database
+    await prisma.board.update({
+        where: { id: boardId },
+        data: {
+            thumbnailUrl: data.thumbnailUrl,
+            thumbnailPublicId: data.thumbnailPublicId,
+            thumbnailUpdatedAt: new Date(),
+        },
+    });
+};
+
+/**
+     * Get board with thumbnail
+     */
+export const getBoardById = async (boardId: string) => {
+    return prisma.board.findUnique({
+        where: { id: boardId },
+        select: {
+            id: true,
+            title: true,
+            description: true,
+            thumbnailUrl: true,
+            thumbnailPublicId: true,
+            thumbnailUpdatedAt: true,
+            isPublic: true,
+            type: true,
+            createdAt: true,
+            updatedAt: true,
+            owner: {
+                select: {
+                    id: true,
+                    username: true,
+                    displayName: true,
+                    avatar: true,
+                },
+            },
+        },
+    });
+}

@@ -2,7 +2,7 @@ import { Server as SocketServer } from "socket.io";
 import { Server as HttpServer } from "http";
 import { PresenceService } from "../services/presence.service.js";
 import { RateLimitService } from "../services/rateLimit.service.js";
-import { BatchStrokesSchema, CursorSchema, Stroke, StrokeSchema, UserPresence } from "../types/socket/canvas.type.js";
+import { BatchStrokesSchema, CursorSchema, DeleteStrokesSchema, MoveStrokesSchema, SelectionSchema, Stroke, StrokeSchema, UndoRedoSchema, UserPresence } from "../types/socket/canvas.type.js";
 import { AuthSocketPayload } from "../types/socket/authSocket.type.js"
 import { SocketEvents } from "../constants/SocketEventEnum.js"
 import { verifyAccessToken } from "../utils/auth.js"
@@ -165,6 +165,37 @@ export class SocketManager {
                 await this.handleRequestSnapshot(socket);
             });
 
+            socket.on(SocketEvents.DELETE_STROKES, async (data: unknown) => {
+                await this.handleDeleteStrokes(socket, data);
+            });
+
+            socket.on(SocketEvents.MOVE_STROKES, async (data: unknown) => {
+                await this.handleMoveStrokes(socket, data);
+            });
+
+            socket.on(SocketEvents.SELECTION_CHANGED, async (data: unknown) => {
+                await this.handleSelectionChange(socket, data);
+            });
+
+            // ✅ Delete strokes
+            socket.on(SocketEvents.DELETE_STROKES, async (data: unknown) => {
+                await this.handleDeleteStrokes(socket, data);
+            });
+
+            // ✅ Move strokes (selection drag)
+            socket.on(SocketEvents.MOVE_STROKES, async (data: unknown) => {
+                await this.handleMoveStrokes(socket, data);
+            });
+
+            // ✅ Undo/Redo
+            socket.on(SocketEvents.UNDO, async (data: unknown) => {
+                await this.handleUndo(socket, data);
+            });
+
+            socket.on(SocketEvents.REDO, async (data: unknown) => {
+                await this.handleRedo(socket, data);
+            });
+
             // Disconnect
             socket.on('disconnect', async () => {
                 await this.handleDisconnect(socket);
@@ -191,6 +222,9 @@ export class SocketManager {
         try {
             console.log(`User ${socket.userId} joining whiteboard ${whiteboardId}`);
 
+            if (socket.whiteBoardId === whiteboardId) {
+                return; // EARLY RETURN
+            }
             // Check if user has access to this whiteboard
             const access = await checkAccess(whiteboardId, socket.userId!);
 
@@ -212,13 +246,15 @@ export class SocketManager {
                 await socket.join(whiteboardId);
             }
 
+            const userColor = this.generateUserColor(socket.userId!)
+            socket.color = userColor
             // Add user to presence
             const presence: UserPresence = {
                 userId: socket.userId!,
                 userName: socket.userName!,
                 displayName: socket.displayName!,
                 socketId: socket.id,
-                color: this.generateUserColor(socket.userId!),
+                color: userColor,
                 lastSeen: Date.now(),
             };
 
@@ -226,6 +262,8 @@ export class SocketManager {
 
             // Get current whiteboard state
             const snapshot = await canvasRepository.getLatestSnapshot(whiteboardId);
+            const deletedIds = await canvasRepository.getDeletedStrokeIds(whiteboardId);
+
             let strokes: Stroke[];
 
             if (snapshot) {
@@ -244,12 +282,15 @@ export class SocketManager {
                 console.log(`Loaded all strokes (${strokes.length})`);
             }
 
+            // Filter out deleted strokes
+            const activeStrokes = strokes.filter(s => !deletedIds.includes(s.id));
+
             // Get online users
             const users = await this.presenceService.getUsers(whiteboardId);
 
             // Send current state to the user
             socket.emit(SocketEvents.WHITEBOARD_STATE, {
-                strokes,
+                strokes: activeStrokes,
                 users,
             });
 
@@ -257,7 +298,7 @@ export class SocketManager {
             socket.to(whiteboardId).emit(SocketEvents.USER_JOINED, presence);
 
             console.log(
-                `✅ User ${socket.userId} joined whiteboard ${whiteboardId} (${users.length} users online)`
+                `✅ User ${socket.userId, socket.color} joined whiteboard ${whiteboardId} (${users.length} users online)`
             );
         } catch (error) {
             console.error('Error joining whiteboard:', error);
@@ -275,15 +316,12 @@ export class SocketManager {
 
         try {
             const whiteboardId = socket.whiteBoardId;
-            // Remove from presence (O(1))
             await this.presenceService.removeUser(whiteboardId, socket.userId!);
 
-            // Notify others
             socket.to(whiteboardId).emit(SocketEvents.USER_LEFT, {
                 userId: socket.userId,
             });
 
-            // Leave the room
             await socket.leave(whiteboardId);
             socket.whiteBoardId = undefined;
 
@@ -307,16 +345,15 @@ export class SocketManager {
                 socket.emit(SocketEvents.ERROR, { message: 'Invalid payload' });
                 return;
             }
-            // Validate stroke data with Zod
+
             const stroke = StrokeSchema.parse({
                 ...(data as Record<string, unknown>),
                 userId: socket.userId,
                 username: socket.userName,
-                displayname: socket.displayName,
+                displayname: socket.displayName ?? undefined,
                 timestamp: Date.now(),
             });
 
-            // Rate limit check
             const allowed = await this.rateLimitService.checkRateLimit(
                 socket.userId!,
                 socket.whiteBoardId
@@ -329,22 +366,18 @@ export class SocketManager {
                 return;
             }
 
-            // Add to buffer for batch processing
             const bufferId = socket.whiteBoardId;
             if (!this.strokeBuffer.has(bufferId)) {
                 this.strokeBuffer.set(bufferId, []);
             }
             this.strokeBuffer.get(bufferId)!.push(stroke);
 
-            // Broadcast to others in the room (NOT to sender)
             socket.to(socket.whiteBoardId).emit(SocketEvents.STROKE_DRAWN, stroke);
 
-            // Track for snapshot
             const count =
                 (this.strokeCountSinceSnapshot.get(socket.whiteBoardId) || 0) + 1;
             this.strokeCountSinceSnapshot.set(socket.whiteBoardId, count);
 
-            // Create snapshot if threshold reached (1000 strokes)
             if (count >= 1000) {
                 await this.createSnapshot(socket.whiteBoardId);
             }
@@ -361,6 +394,7 @@ export class SocketManager {
                 });
             }
         }
+
     }
 
     /**
@@ -377,22 +411,20 @@ export class SocketManager {
                 socket.emit(SocketEvents.ERROR, { message: 'Invalid payload' });
                 return;
             }
-            // Validate batch with Zod
+
             const batch = BatchStrokesSchema.parse({
                 ...(data as Record<string, unknown>),
                 whiteboardId: socket.whiteBoardId,
                 timestamp: Date.now(),
             });
 
-            // Add userId and username to each stroke
             batch.strokes = batch.strokes.map((stroke) => ({
                 ...stroke,
                 userId: socket.userId!,
                 username: socket.userName!,
-                displayname: socket.displayName
+                displayname: socket.displayName ?? undefined
             }));
 
-            // Rate limit check (count all strokes in batch)
             const allowed = await this.rateLimitService.checkRateLimit(
                 socket.userId!,
                 socket.whiteBoardId
@@ -405,17 +437,11 @@ export class SocketManager {
                 return;
             }
 
-            // Save to database immediately (batch is already optimized)
             await canvasRepository.saveBatch(batch);
 
-            // Gửi cho NGƯỜI KHÁC trong phòng
-            // Broadcast to others
-            // socket.to(socket.whiteBoardId).emit(SocketEvents.BATCH_DRAWN, batch);
-            this.io.to(socket.whiteBoardId).emit(SocketEvents.BATCH_DRAWN, batch)
-            // Gửi XÁC NHẬN cho CHÍNH NGƯỜI VẼ (Quan trọng!)
-            socket.emit('batch_confirmed', { batchId: batch.batchId });
+            this.io.to(socket.whiteBoardId).emit(SocketEvents.BATCH_DRAWN, batch);
+            socket.emit(SocketEvents.BATCH_CONFIRMED, { batchId: batch.batchId });
 
-            // Track for snapshot
             const count =
                 (this.strokeCountSinceSnapshot.get(socket.whiteBoardId) || 0) +
                 batch.strokes.length;
@@ -443,6 +469,125 @@ export class SocketManager {
         }
     }
 
+    // ✅ Handle delete strokes
+    private async handleDeleteStrokes(socket: AuthSocketPayload, data: unknown): Promise<void> {
+        if (!socket.whiteBoardId) {
+            socket.emit(SocketEvents.ERROR, { message: 'Not in a whiteboard' });
+            return;
+        }
+
+        try {
+            if (typeof data !== 'object' || data === null) {
+                socket.emit(SocketEvents.ERROR, { message: 'Invalid payload' });
+                return;
+            }
+
+            const deleteData = DeleteStrokesSchema.parse({
+                ...(data as Record<string, unknown>),
+                whiteboardId: socket.whiteBoardId,
+                deletedBy: socket.userId!,
+                timestamp: Date.now(),
+            });
+
+            // Save deletion to database
+            await canvasRepository.deleteStrokes(deleteData);
+
+            // Broadcast to all users (including sender for confirmation)
+            this.io.to(socket.whiteBoardId).emit(SocketEvents.STROKES_DELETED, {
+                strokeIds: deleteData.strokeIds,
+                deletedBy: deleteData.deletedBy,
+            });
+
+            console.log(
+                `✅ Deleted ${deleteData.strokeIds.length} strokes by user ${socket.userId} in whiteboard ${socket.whiteBoardId}`
+            );
+        } catch (error) {
+            if (error instanceof ZodError) {
+                socket.emit(SocketEvents.ERROR, {
+                    message: 'Invalid delete data',
+                    errors: error.message,
+                });
+            } else {
+                console.error('Error deleting strokes:', error);
+                socket.emit(SocketEvents.ERROR, {
+                    message: 'Failed to delete strokes'
+                });
+            }
+        }
+    }
+
+    // ✅ Handle move strokes (selection drag)
+    private async handleMoveStrokes(socket: AuthSocketPayload, data: unknown): Promise<void> {
+        if (!socket.whiteBoardId) {
+            socket.emit(SocketEvents.ERROR, { message: 'Not in a whiteboard' });
+            return;
+        }
+
+        try {
+            if (typeof data !== 'object' || data === null) {
+                socket.emit(SocketEvents.ERROR, { message: 'Invalid payload' });
+                return;
+            }
+
+            const moveData = MoveStrokesSchema.parse({
+                ...(data as Record<string, unknown>),
+                whiteboardId: socket.whiteBoardId,
+                movedBy: socket.userId!,
+                timestamp: Date.now(),
+            });
+
+            // Update strokes in database
+            await canvasRepository.moveStrokes(moveData);
+
+            // Broadcast to all users
+            this.io.to(socket.whiteBoardId).emit(SocketEvents.STROKES_MOVED, {
+                updates: moveData.updates,
+                movedBy: moveData.movedBy,
+            });
+
+            console.log(
+                `✅ Moved ${moveData.updates.length} strokes by user ${socket.userId} in whiteboard ${socket.whiteBoardId}`
+            );
+        } catch (error) {
+            if (error instanceof ZodError) {
+                socket.emit(SocketEvents.ERROR, {
+                    message: 'Invalid move data',
+                    errors: error.message,
+                });
+            } else {
+                console.error('Error moving strokes:', error);
+                socket.emit(SocketEvents.ERROR, {
+                    message: 'Failed to move strokes'
+                });
+            }
+        }
+    }
+
+
+    // ✅ Handle selection change (optional - for collaborative selection highlighting)
+    private async handleSelectionChange(socket: AuthSocketPayload, data: unknown): Promise<void> {
+        if (!socket.whiteBoardId) return;
+
+        try {
+            if (typeof data !== 'object' || data === null) {
+                return;
+            }
+
+            const selection = SelectionSchema.parse({
+                ...(data as Record<string, unknown>),
+                userId: socket.userId!,
+                username: socket.displayName,
+                timestamp: Date.now(),
+            });
+
+            // Broadcast to others (ephemeral, not saved to DB)
+            socket.to(socket.whiteBoardId).emit(SocketEvents.SELECTION_CHANGED, selection);
+        } catch (error) {
+            // Silently fail for selection (not critical)
+            console.error('Error handling selection change:', error);
+        }
+    }
+
     /**
      * Handle cursor movement
      */
@@ -451,28 +596,25 @@ export class SocketManager {
 
         try {
             if (typeof data !== 'object' || data === null) {
-                socket.emit(SocketEvents.ERROR, { message: 'Invalid payload' });
                 return;
             }
-            // Validate cursor data
+
             const cursor = CursorSchema.parse({
                 ...(data as Record<string, unknown>),
                 userId: socket.userId,
                 username: socket.userName,
-                displayname: socket.displayName,
+                displayname: socket.displayName ?? undefined,
+                color: socket?.color,
                 timestamp: Date.now(),
             });
 
-            // Broadcast to others (don't save to DB, ephemeral data)
             socket.to(socket.whiteBoardId).emit(SocketEvents.CURSOR_MOVED, cursor);
 
-            // Update heartbeat (keeps user presence alive)
             await this.presenceService.heartbeat(
                 socket.whiteBoardId,
                 socket.userId!
             );
         } catch (error: unknown) {
-            // Silently fail for cursor (not critical)
             console.error('Error handling cursor move:', error);
         }
     }
@@ -499,6 +641,137 @@ export class SocketManager {
             console.error('Error requesting snapshot:', error);
             socket.emit(SocketEvents.ERROR, {
                 message: 'Failed to get snapshot'
+            });
+        }
+    }
+
+
+    // ✅ Handle undo
+    private async handleUndo(socket: AuthSocketPayload, data: unknown): Promise<void> {
+        if (!socket.whiteBoardId) {
+            socket.emit(SocketEvents.ERROR, { message: 'Not in a whiteboard' });
+            return;
+        }
+
+        try {
+            if (typeof data !== 'object' || data === null) {
+                socket.emit(SocketEvents.ERROR, { message: 'Invalid payload' });
+                return;
+            }
+
+            const undoAction = UndoRedoSchema.parse({
+                ...(data as Record<string, unknown>),
+                whiteboardId: socket.whiteBoardId,
+                userId: socket.userId!,
+                action: 'undo',
+                timestamp: Date.now(),
+            });
+
+            // Perform undo
+            const undoneOp = await canvasRepository.undo(
+                undoAction.whiteboardId,
+                undoAction.userId
+            );
+
+            if (!undoneOp) {
+                socket.emit(SocketEvents.ERROR, {
+                    message: 'Nothing to undo'
+                });
+                return;
+            }
+
+            // Get updated state
+            const strokes = await canvasRepository.getStrokes(socket.whiteBoardId);
+            const deletedIds = await canvasRepository.getDeletedStrokeIds(socket.whiteBoardId);
+            const activeStrokes = strokes.filter(s => !deletedIds.includes(s.id));
+
+            // Broadcast updated state to all users
+            this.io.to(socket.whiteBoardId).emit(SocketEvents.UNDO_COMPLETED, {
+                userId: socket.userId,
+                operation: undoneOp.type,
+                strokes: activeStrokes,
+            });
+
+            // Send undo/redo status to user
+            const status = await canvasRepository.getUndoRedoStatus(
+                socket.whiteBoardId,
+                socket.userId!
+            );
+
+            socket.emit(SocketEvents.HISTORY_UPDATED, status);
+
+            console.log(
+                `✅ Undo completed: ${undoneOp.type} by user ${socket.userId} in whiteboard ${socket.whiteBoardId}`
+            );
+        } catch (error) {
+            console.error('Error handling undo:', error);
+            socket.emit(SocketEvents.ERROR, {
+                message: 'Failed to undo operation'
+            });
+        }
+    }
+
+    // ✅ Handle redo
+    private async handleRedo(socket: AuthSocketPayload, data: unknown): Promise<void> {
+        if (!socket.whiteBoardId) {
+            socket.emit(SocketEvents.ERROR, { message: 'Not in a whiteboard' });
+            return;
+        }
+
+        try {
+            if (typeof data !== 'object' || data === null) {
+                socket.emit(SocketEvents.ERROR, { message: 'Invalid payload' });
+                return;
+            }
+
+            const redoAction = UndoRedoSchema.parse({
+                ...(data as Record<string, unknown>),
+                whiteboardId: socket.whiteBoardId,
+                userId: socket.userId!,
+                action: 'redo',
+                timestamp: Date.now(),
+            });
+
+            // Perform redo
+            const redoneOp = await canvasRepository.redo(
+                redoAction.whiteboardId,
+                redoAction.userId
+            );
+
+            if (!redoneOp) {
+                socket.emit(SocketEvents.ERROR, {
+                    message: 'Nothing to redo'
+                });
+                return;
+            }
+
+            // Get updated state
+            const strokes = await canvasRepository.getStrokes(socket.whiteBoardId);
+            const deletedIds = await canvasRepository.getDeletedStrokeIds(socket.whiteBoardId);
+            const activeStrokes = strokes.filter(s => !deletedIds.includes(s.id));
+
+            // Broadcast updated state to all users
+            this.io.to(socket.whiteBoardId).emit(SocketEvents.REDO_COMPLETED, {
+                userId: socket.userId,
+                operation: redoneOp.type,
+                strokes: activeStrokes,
+            });
+
+            // Send undo/redo status to user
+            const status = await canvasRepository.getUndoRedoStatus(
+                socket.whiteBoardId,
+                socket.userId!
+            );
+
+            socket.emit(SocketEvents.HISTORY_UPDATED, status);
+
+            console.log(
+                `✅ Redo completed: ${redoneOp.type} by user ${socket.userId} in whiteboard ${socket.whiteBoardId}`
+            );
+        } catch (error) {
+            console.error('Error handling redo:', error);
+            socket.emit(SocketEvents.ERROR, {
+                message: 'Failed to redo operation'
             });
         }
     }

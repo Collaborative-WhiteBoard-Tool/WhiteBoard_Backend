@@ -13,6 +13,10 @@ export const BoardDBSchema = z.object({
     // Whiteboard data (canvas, shapes, paths...)
     data: z.record(z.string(), z.any()),
 
+    thumbnailUrl: z.string().url().nullable().optional(),
+    thumbnailPublicId: z.string().nullable().optional(),
+    thumbnailUpdatedAt: z.date().nullable().optional(),
+
     createdAt: z.date(),
     updatedAt: z.date(),
 });
@@ -30,6 +34,7 @@ export const createNewBoardSchema = z.object({
         .optional()
         .default("whiteboard")
 }).strict()
+export type CreateNewBoardDTO = z.infer<typeof createNewBoardSchema>
 
 
 // export const updateBoardSchema = z.object({
@@ -37,4 +42,11 @@ export const createNewBoardSchema = z.object({
 //     owner: z.string().min(1, "Owner is required").optional(),
 // })
 
-export type CreateNewBoardDTO = z.infer<typeof createNewBoardSchema>
+
+
+export const updateThumbnailSchema = z.object({
+    thumbnailUrl: z.string().url(),
+    thumbnailPublicId: z.string(),
+}).strict();
+
+export type UpdateThumbnailDTO = z.infer<typeof updateThumbnailSchema>;

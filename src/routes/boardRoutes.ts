@@ -10,6 +10,6 @@ const router = Router();
 router.get('/', protect, boardController.getUserWhiteboardsController)
 router.get('/:id', protect, boardController.getOne)
 router.post('/', protect, validated(createNewBoardSchema, "body"), boardController.createBoard)
-
+router.patch('/:boardId/thumbnail', protect, boardController.updateBoardThumbnail)
 
 export default router;

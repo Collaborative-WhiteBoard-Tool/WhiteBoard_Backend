@@ -7,7 +7,7 @@ import AppError from "../utils/appError.js"
 
 
 export const registerRepository = async (payload: RegisterDTO): Promise<SafeUser> => {
-    const user = await prisma.user.create({ data: payload })
+    const user = await prisma.user.create({ data: { ...payload, provider: 'local', emailVerified: false } })
     const { password: _pw, ...safeUser } = user
 
     return safeUser
@@ -19,7 +19,7 @@ export const findUserPublicById = async (id: string): Promise<SafeUser> => {
         where: { id }
     });
     if (!user) {
-        throw new AppError("NOT_FOUND");
+        throw new AppError("USER_NOT_FOUND");
     }
     const { password: _pw, ...safeUser } = user
     return safeUser

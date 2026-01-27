@@ -3,7 +3,7 @@ import app from "./app.js";
 import { ENV } from "./config/env.js";
 import { closeMongoDB, connectMongo } from "./config/mongo.js";
 import { createSocketManager, SocketManager } from "./sockets/socketManager.js";
-import { connectRedis } from "./config/redis.js";
+import { closeRedis, connectRedis } from "./config/redis.js";
 
 
 let socketManager: SocketManager;
@@ -28,6 +28,7 @@ const strartServer = async () => {
             }
 
             await closeMongoDB()
+            await closeRedis();
             process.exit(0);
         };
         process.on('SIGTERM', () => shutdown('SIGTERM'))

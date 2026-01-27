@@ -12,18 +12,12 @@ declare global {
                 query?: z.infer<ValidatedQuery>;
             }
         }
+        export interface User {
+            id: string;
+            email: string;
+            googleId?: string | null;
+            provider?: string | null;
+        }
     }
 }
-
-// declare global {
-//     namespace Express {
-//         export interface Request {
-//             user?: JwtUserPayload
-//             validated?: {
-//                 body?: any;
-//                 params?: any;
-//                 query?: any;
-//             }
-//         }
-//     }
-// }
+export { }

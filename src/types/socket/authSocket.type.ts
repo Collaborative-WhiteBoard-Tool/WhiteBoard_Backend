@@ -4,5 +4,6 @@ export interface AuthSocketPayload extends Socket {
     userId?: string;
     userName?: string;
     displayName?: string | null,
+    color?: string,
     whiteBoardId?: string;
 }
