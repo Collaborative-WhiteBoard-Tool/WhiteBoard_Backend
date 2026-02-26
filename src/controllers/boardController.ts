@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express"
 import { createBoardService, downloadBoardDataService, getDeletedBoardsService, getOneBoardService, getOwnedBoardsService, getSharedBoardsService, getUserWhiteboardsService, permanentlyDeleteBoardService, renameBoardService, restoreBoardService, shareBoardService, softDeleteBoardService, toggleFavoriteService } from "../services/boardService.js"
 import { createNewBoardSchema, shareBoardSchema, toggleFavoriteSchema, updateBoardTitleSchema, updateThumbnailSchema } from "../schemas/boardSchema.js"
-import { ApiResponse } from "../utils/apiResponse.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
 import AppError from "../utils/appError.js"
 import { checkAccess, getBoardById, updateThumbnail } from "../repository/board.repository.js"
 
@@ -212,11 +212,11 @@ export const getDeletedBoards = async (req: Request, res: Response, next: NextFu
         const userId = req.user!.id;
         const page = Number(req.query.page) || 1;
         const limit = Number(req.query.limit) || 8;
-    console.log('📊 Fetching deleted boards:', { userId, page, limit });
+        console.log('📊 Fetching deleted boards:', { userId, page, limit });
 
         const deletedBoards = await getDeletedBoardsService(userId, page, limit);
 
-         console.log('✅ Found deleted boards:', deletedBoards.total);
+        console.log('✅ Found deleted boards:', deletedBoards.total);
         res.status(200).json(ApiResponse.success("SUCCESS", deletedBoards));
     } catch (error) {
         console.error('❌ Error in getDeletedBoards:', error);
@@ -238,7 +238,7 @@ export const downloadBoard = async (req: Request, res: Response, next: NextFunct
         // Set headers for file download
         res.setHeader('Content-Type', 'application/json');
         res.setHeader('Content-Disposition', `attachment; filename="board-${boardId}.json"`);
-        
+
         res.status(200).json(boardData);
     } catch (error) {
         next(error);
