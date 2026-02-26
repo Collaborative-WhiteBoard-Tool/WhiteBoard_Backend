@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express"
-import { createBoardService, getOneBoardService, getUserWhiteboardsService } from "../services/boardService.js"
-import { createNewBoardSchema, updateThumbnailSchema } from "../schemas/boardSchema.js"
+import { createBoardService, downloadBoardDataService, getDeletedBoardsService, getOneBoardService, getOwnedBoardsService, getSharedBoardsService, getUserWhiteboardsService, permanentlyDeleteBoardService, renameBoardService, restoreBoardService, shareBoardService, softDeleteBoardService, toggleFavoriteService } from "../services/boardService.js"
+import { createNewBoardSchema, shareBoardSchema, toggleFavoriteSchema, updateBoardTitleSchema, updateThumbnailSchema } from "../schemas/boardSchema.js"
 import { ApiResponse } from "../utils/apiResponse.js"
 import AppError from "../utils/appError.js"
 import { checkAccess, getBoardById, updateThumbnail } from "../repository/board.repository.js"
@@ -95,6 +95,187 @@ export const updateBoardThumbnail = async (
             success: true,
             message: 'Thumbnail updated successfully',
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const renameBoard = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { boardId } = req.params;
+        const userId = req.user!.id;
+        const data = updateBoardTitleSchema.parse(req.body);
+
+        await renameBoardService(boardId, userId, data);
+
+        res.status(200).json(ApiResponse.success("SUCCESS"));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ✅ 2. TOGGLE FAVORITE
+ * PATCH /api/boards/:boardId/favorite
+ */
+export const toggleFavorite = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { boardId } = req.params;
+        const userId = req.user!.id;
+        const data = toggleFavoriteSchema.parse(req.body);
+
+        await toggleFavoriteService(boardId, userId, data);
+
+        res.status(200).json(ApiResponse.success("SUCCESS"));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ✅ 3. SOFT DELETE (Move to Trash)
+ * DELETE /api/boards/:boardId
+ */
+export const softDeleteBoard = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { boardId } = req.params;
+        const userId = req.user!.id;
+
+        await softDeleteBoardService(boardId, userId);
+
+        res.status(200).json(ApiResponse.success("SUCCESS"));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ✅ 4. RESTORE BOARD
+ * POST /api/boards/:boardId/restore
+ */
+export const restoreBoard = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { boardId } = req.params;
+        const userId = req.user!.id;
+
+        await restoreBoardService(boardId, userId);
+
+        res.status(200).json(ApiResponse.success("SUCCESS"));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ✅ 5. PERMANENTLY DELETE
+ * DELETE /api/boards/:boardId/permanent
+ */
+export const permanentlyDeleteBoard = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { boardId } = req.params;
+        const userId = req.user!.id;
+
+        await permanentlyDeleteBoardService(boardId, userId);
+
+        res.status(200).json(ApiResponse.success("SUCCESS"));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ✅ 6. SHARE BOARD
+ * POST /api/boards/:boardId/share
+ */
+export const shareBoard = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { boardId } = req.params;
+        const userId = req.user!.id;
+        const data = shareBoardSchema.parse(req.body);
+
+        await shareBoardService(boardId, userId, data);
+
+        res.status(200).json(ApiResponse.success("SUCCESS"));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ✅ 7. GET DELETED BOARDS (Trash)
+ * GET /api/boards/trash
+ */
+export const getDeletedBoards = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        console.log('🗑️ GET /boards/trash called');
+        console.log('👤 User ID:', req.user?.id);
+        const userId = req.user!.id;
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 8;
+    console.log('📊 Fetching deleted boards:', { userId, page, limit });
+
+        const deletedBoards = await getDeletedBoardsService(userId, page, limit);
+
+         console.log('✅ Found deleted boards:', deletedBoards.total);
+        res.status(200).json(ApiResponse.success("SUCCESS", deletedBoards));
+    } catch (error) {
+        console.error('❌ Error in getDeletedBoards:', error);
+        next(error);
+    }
+};
+
+/**
+ * ✅ 8. DOWNLOAD BOARD
+ * GET /api/boards/:boardId/download
+ */
+export const downloadBoard = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { boardId } = req.params;
+        const userId = req.user!.id;
+
+        const boardData = await downloadBoardDataService(boardId, userId);
+
+        // Set headers for file download
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="board-${boardId}.json"`);
+        
+        res.status(200).json(boardData);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ✅ 9. GET BOARDS OWNED BY USER
+ * GET /api/boards/owned
+ */
+export const getOwnedBoards = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user!.id;
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 8;
+
+        const ownedBoards = await getOwnedBoardsService(userId, page, limit);
+
+        res.status(200).json(ApiResponse.success("SUCCESS", ownedBoards));
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
+ * ✅ 10. GET BOARDS SHARED WITH USER
+ * GET /api/boards/shared
+ */
+export const getSharedBoards = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user!.id;
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 8;
+
+        const sharedBoards = await getSharedBoardsService(userId, page, limit);
+
+        res.status(200).json(ApiResponse.success("SUCCESS", sharedBoards));
     } catch (error) {
         next(error);
     }

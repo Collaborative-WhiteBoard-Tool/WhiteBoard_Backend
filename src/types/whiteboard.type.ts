@@ -5,11 +5,14 @@ export interface BoardResponse {
     title: string
     description: string | null
     isPublic: boolean
+    isFavorite?: boolean  
+    isDeleted?: boolean  
+    deletedAt?: Date  
     type: string | null
     createdAt: Date
     updatedAt: Date
     owner: {
-        username: string;
+        username: string | null;
         displayName: string | null
     };
     collaborators: {
@@ -18,7 +21,7 @@ export interface BoardResponse {
         invitedAt: Date
         acceptedAt: Date | null
         user: {
-            username: string;
+            username: string | null;
             displayName: string | null
         };
     }[]
@@ -38,10 +41,12 @@ export interface BoardListItem {
     title: string
     description: string | null
     isPublic: boolean
+    isFavorite?: boolean 
+    isDeleted?: boolean 
     type: string | null
     owner: {
         id: string;
-        username: string;
+        username: string| null;
         displayName: string | null
     };
     createdAt: Date
@@ -54,7 +59,7 @@ export interface CollaboratorResponse {
     invitedAt: Date
     acceptedAt: Date | null
     user: {
-        username: string;
+        username: string | null;
         displayName: string | null
     };
 }

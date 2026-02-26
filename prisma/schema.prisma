@@ -33,6 +33,7 @@ model User {
   // Relations
   ownedBoards        Board[]              @relation("BoardOwner")
   boardCollaborators BoardCollaborator[]
+  favoriteBoards     UserFavoriteBoard[]
 
   @@index([email])
   @@index([googleId])
@@ -55,14 +56,34 @@ model Board {
   thumbnailPublicId String?   
   thumbnailUpdatedAt DateTime?
 
+  isFavorite  Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
   collaborators BoardCollaborator[]
+  favorites     UserFavoriteBoard[]
 
   @@map("boards")
 }
+
+model UserFavoriteBoard {
+  id        String   @id @default(cuid())
+  userId    String
+  boardId   String
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([userId, boardId])
+  @@map("user_favorite_boards")
+}
+
 
 
 model BoardCollaborator {

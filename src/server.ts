@@ -35,7 +35,7 @@ const strartServer = async () => {
         process.on('SIGINT', () => shutdown('SIGINT'))
 
         process.on('uncaughtException', (err) => {
-            console.error('Chi tiết lỗi đây rồi:');
+            console.error('Chi tiết lỗi:');
             console.error(err);
             process.exit(1);
         });

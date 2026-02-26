@@ -113,7 +113,7 @@ export class SocketManager {
                 // Gán thông tin vào socket để dùng ở các event sau
                 socket.userId = payload.id;
 
-                socket.userName = user.username;
+                socket.userName = user.username ?? undefined
                 socket.displayName = user.displayName
 
                 console.log(`✅ Socket authenticated via Cookie: ${socket.id}, User: ${socket.userId}, ${socket.displayName}`);
