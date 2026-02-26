@@ -21,5 +21,27 @@ export const ENV = {
   },
   CORS: {
     URL_CLIENT: process.env.URL_CLIENT
-  }
+  },
+  REDIRECT : {
+    FRONTEND_URL: process.env.FRONTEND_URL
+  },
+  REDIS: {
+    REDIS_HOST: process.env.REDIS_HOST,
+    REDIS_PORT: process.env.REDIS_PORT,
+  },
+  CLOUDINARY: {
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET
+  },
+  GOOGLE: {
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
+  },
+  MAIL: {
+    MAIL_USER: process.env.MAIL_USER ,
+    MAIL_PASSWORD:  process.env.MAIL_PASSWORD
+  },
+  FRONTEND_URL: process.env.FRONTEND_URL
 };

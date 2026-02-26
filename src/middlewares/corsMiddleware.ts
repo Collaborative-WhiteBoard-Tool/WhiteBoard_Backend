@@ -1,6 +1,5 @@
 import { ENV } from "../config/env.js"
 import cors from "cors";
-import AppError from "../utils/appError.js";
 
 
 const allowedOrigins = ENV.CORS.URL_CLIENT ? ENV.CORS.URL_CLIENT.split(",") : []

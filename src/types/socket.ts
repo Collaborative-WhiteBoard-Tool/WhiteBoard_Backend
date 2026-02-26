@@ -1,5 +1,4 @@
 import { drawSegmentSchema } from "../schemas/segmentSchema.js";
-import { z } from "zod";
 
 // Mỗi điểm vẽ
 export type DrawPoint = {
