@@ -4,6 +4,7 @@ dotenv.config();
 
 export const ENV = {
   PORT: process.env.PORT,
+  NODE_ENV: process.env.NODE_ENV,
   MYSQL: {
     DB_HOST: process.env.DB_HOST,
     DB_PORT: Number(process.env.DB_PORT),
@@ -22,7 +23,7 @@ export const ENV = {
   CORS: {
     URL_CLIENT: process.env.URL_CLIENT
   },
-  REDIRECT : {
+  REDIRECT: {
     FRONTEND_URL: process.env.FRONTEND_URL
   },
   REDIS: {
@@ -40,8 +41,8 @@ export const ENV = {
     GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
   },
   MAIL: {
-    MAIL_USER: process.env.MAIL_USER ,
-    MAIL_PASSWORD:  process.env.MAIL_PASSWORD
+    MAIL_USER: process.env.MAIL_USER,
+    MAIL_PASSWORD: process.env.MAIL_PASSWORD
   },
   FRONTEND_URL: process.env.FRONTEND_URL
 };

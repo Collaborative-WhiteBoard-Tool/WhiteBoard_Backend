@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express"
 import { createUserSchema, loginSchema } from "../schemas/userSchema.js";
 import { findUserById, loginService, refreshSessionService, registerService } from "../services/auth.service.js";
 import AppError from "../utils/appError.js";
-import { ApiResponse } from "../utils/apiResponse.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { JwtPayload } from "jsonwebtoken";
 
 

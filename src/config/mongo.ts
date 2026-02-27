@@ -3,7 +3,10 @@ import { ENV } from './env.js';
 import 'dotenv/config'
 import AppError from '../utils/appError.js';
 
-const uri = ENV.MONGO.URI!;
+const uri = ENV.MONGO.URI;
+if (!uri) {
+    throw new AppError("MONGO_URI_NOT_DEFINED");
+}
 const client = new MongoClient(uri, { maxPoolSize: 10 })
 let db: Db
 export const connectMongo = async (): Promise<Db> => {
@@ -32,15 +35,15 @@ export const getDB = () => {
 
 
 const createIndexes = async () => {
-    db = getDB()
-    db.collection("strokes").createIndex({ whiteboardId: 1, createdAt: 1 })
+    if (process.env.NODE_ENV !== 'development') {
+        console.log('ℹ️ Skip index creation in production');
+        return;
+    }
 
-    ////////// RefreshTokens collection indexes
-    // await db.collection('refreshTokens').createIndex({ token: 1 }, { unique: true });
-    // await db.collection('refreshTokens').createIndex({ userId: 1 });
-    // await db.collection('refreshTokens').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+    db = getDB();
+    await db.collection("strokes").createIndex({ whiteboardId: 1, createdAt: 1 });
     console.log('✅ Database indexes created');
-}
+};
 
 
 export const closeMongoDB = async (): Promise<void> => {

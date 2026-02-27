@@ -2,7 +2,14 @@ import { ENV } from '../config/env.js';
 import { transporter } from '../config/mailer.js';
 import { generateShareBoardEmail, ShareBoardEmailData } from '../utils/emailTemplates.js';
 
-export const sendShareBoardEmail = async (data: ShareBoardEmailData): Promise<void> => {
+export const sendShareBoardEmail = async (
+    data: ShareBoardEmailData
+): Promise<void> => {
+    if (!transporter) {
+        console.warn('⚠️ Mail service disabled, skip sending email');
+        return;
+    }
+
     const { subject, html } = generateShareBoardEmail(data);
 
     await transporter.sendMail({

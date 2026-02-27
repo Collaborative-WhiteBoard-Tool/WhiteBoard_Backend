@@ -14,13 +14,22 @@ import { ENV } from './env.js';
  * Configure Google OAuth Strategy
  */
 export const configurePassport = (): void => {
+    const {
+        GOOGLE_CLIENT_ID,
+        GOOGLE_CLIENT_SECRET,
+        GOOGLE_CALLBACK_URL,
+    } = ENV.GOOGLE;
+
+    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+        console.warn("⚠️ Google OAuth disabled (missing env vars)");
+        return;
+    }
     passport.use(
         new GoogleStrategy(
             {
-                clientID: ENV.GOOGLE.GOOGLE_CLIENT_ID!,
-                clientSecret: ENV.GOOGLE.GOOGLE_CLIENT_SECRET!,
-                callbackURL: ENV.GOOGLE.GOOGLE_CALLBACK_URL!,
-                passReqToCallback: false,
+                clientID: GOOGLE_CLIENT_ID,
+                clientSecret: GOOGLE_CLIENT_SECRET,
+                callbackURL: GOOGLE_CALLBACK_URL!,
             },
             async (
                 accessToken: string,

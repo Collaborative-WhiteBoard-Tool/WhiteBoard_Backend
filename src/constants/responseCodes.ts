@@ -51,7 +51,10 @@ export const RESPONSE_CODES = {
   JUST_ALLOW_IMAGE: { httpStatus: HttpStatusCode.BAD_REQUEST, code: 4009, message: "Only images are allowed" },
 
   // DATABASE
-  CANNOT_CONNECT_MONGODB: { httpStatus: HttpStatusCode.BAD_GATEWAY, code: 5020, message: "Can not connect mongodb!" }
+  CANNOT_CONNECT_MONGODB: { httpStatus: HttpStatusCode.BAD_GATEWAY, code: 5020, message: "Can not connect mongodb!" },
+
+  //MONGODB
+  MONGO_URI_NOT_DEFINED: { httpStatus: HttpStatusCode.BAD_GATEWAY, code: 5021, message: "MONGO_URI_NOT_DEFINED!" }
 
 } as const;
 export type ResponseCodeKey = keyof typeof RESPONSE_CODES;
