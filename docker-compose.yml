@@ -1,0 +1,63 @@
+services:
+  # --- BACKEND APPLICATION ---
+  whiteboard-backend:
+    build: .
+    container_name: whiteboard_app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.docker
+    environment:
+      - NODE_ENV=production
+      # Ghi đè các biến kết nối để trỏ vào đúng tên service bên dưới
+      - DB_HOST=mysql
+      - MONGO_URI=mongodb://root:123456@mongo_db:27017/whiteboard_db?authSource=admin
+      - REDIS_HOST=redis_cache
+      - REDIS_PORT=6379
+      - DATABASE_URL=mysql://root:123456@mysql:3306/Test_NodeJS
+    depends_on:
+      - mysql
+      - mongo_db
+      - redis_cache
+
+  # --- MYSQL DATABASE ---
+  mysql:
+    image: mysql:8.0
+    container_name: whiteboard-sql-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: Test_NodeJS
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # --- MONGO DATABASE ---
+  mongo_db:
+    image: mongo:7
+    container_name: mongo_db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # --- REDIS CACHE ---
+  redis_cache:
+    image: redis:7-alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mysql_data:
+  mongo_data:
+  redis_data:
