@@ -36,7 +36,7 @@ export const googleCallback = async (
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax' as const,
+            sameSite: 'none' as const,
         };
 
         res.cookie('accessToken', result.accessToken, {
@@ -53,7 +53,7 @@ export const googleCallback = async (
 
         // Redirect to frontend success page
         const frontendUrl = ENV.FRONTEND_URL;
-        res.redirect(`${frontendUrl}/auth/google/success`);
+        res.redirect(`${frontendUrl}/auth/google/success?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}`);
     } catch (error) {
         console.error('❌ Google callback error:', error);
 
