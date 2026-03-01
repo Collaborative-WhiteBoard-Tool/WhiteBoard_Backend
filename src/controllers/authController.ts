@@ -15,7 +15,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax' as const,
+            sameSite: 'none' as const,
         };
         res.cookie('accessToken', result.accessToken, {
             ...cookieOptions,
@@ -40,7 +40,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax' as const,
+            sameSite: 'none' as const,
         };
         res.cookie('accessToken', result.accessToken, {
             ...cookieOptions,
@@ -60,7 +60,7 @@ export const logout = (req: Request, res: Response) => {
     const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax' as const,
+        sameSite: 'none' as const,
     };
 
     // Xóa cookies bằng cách set lại với giá trị rỗng và thời gian hết hạn ngay lập tức
@@ -108,7 +108,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax' as const,
+            sameSite: 'none' as const,
         };
 
         res.cookie('accessToken', accessToken, {
