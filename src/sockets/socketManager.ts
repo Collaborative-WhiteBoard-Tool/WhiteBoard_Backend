@@ -33,7 +33,7 @@ export class SocketManager {
         // Initialize Socket.IO server
         this.io = new SocketServer(server, {
             cors: {
-                origin: 'http://localhost:5173',
+                origin: process.env.URL_CLIENT?.split(',').map(url => url.trim()) || ['http://localhost:5173'],
                 credentials: true,
             },
             // Performance settings
