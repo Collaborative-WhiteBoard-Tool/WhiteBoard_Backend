@@ -9,11 +9,13 @@ import AppError from "./utils/appError.js";
 import cookieParser from 'cookie-parser';
 import corsMiddleware from "./middlewares/corsMiddleware.js";
 import passport, { configurePassport } from "./config/passport.js";
+import { ENV } from "./config/env.js";
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: ENV.CORS.URL_CLIENT?.split(',').map(url => url.trim()),
   credentials: true,
 }));
 app.use(corsMiddleware)
