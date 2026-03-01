@@ -95,7 +95,7 @@ export const getMe = async (req: JwtPayload, res: Response, next: NextFunction) 
 
 export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const oldRefreshToken = req.cookies.refreshToken as string | undefined;
+        const oldRefreshToken = req.cookies.refreshToken || req.body?.refreshToken as string | undefined;
 
         if (!oldRefreshToken) {
             return next(new AppError('REFRESH_TOKEN_NOT_FOUND'));

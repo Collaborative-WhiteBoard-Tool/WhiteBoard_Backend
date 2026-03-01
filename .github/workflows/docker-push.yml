@@ -20,6 +20,12 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ./whiteboard-backend
           push: true
           tags: minhdang04/whiteboard-backend:latest, minhdang04/whiteboard-backend:${{ github.sha }}
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./whiteboard-frontend
+          push: true
+          tags: minhdang04/whiteboard-frontend:latest

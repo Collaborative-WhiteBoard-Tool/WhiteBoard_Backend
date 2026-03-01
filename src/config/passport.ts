@@ -51,10 +51,7 @@ export const configurePassport = (): void => {
                         return done(new AppError('OAUTH_NO_EMAIL'));
                     }
 
-                    const emailVerified = profile.emails?.[0]?.verified ?? false;
-                    if (!emailVerified) {
-                        return done(new AppError('OAUTH_EMAIL_NOT_VERIFIED'));
-                    }
+                    const emailVerified = true;
 
                     // Map Google profile to our payload
                     const googlePayload: GoogleOAuthPayload = {

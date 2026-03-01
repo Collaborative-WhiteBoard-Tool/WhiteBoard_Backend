@@ -2,7 +2,9 @@ import { ENV } from "../config/env.js"
 import cors from "cors";
 
 
-const allowedOrigins = ENV.CORS.URL_CLIENT ? ENV.CORS.URL_CLIENT.split(",") : []
+const allowedOrigins = (ENV.CORS.URL_CLIENT || '')
+    .split(',')
+    .map(o => o.trim());
 const corsMiddleware = cors({
     origin: (requestOrigin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
         // Cho phép request không có origin (Postman, mobile, server-to-server)
