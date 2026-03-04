@@ -1,19 +1,21 @@
+import { Resend } from 'resend';
 import { ENV } from '../config/env.js';
-import { transporter } from '../config/mailer.js';
 import { generateShareBoardEmail, ShareBoardEmailData } from '../utils/emailTemplates.js';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendShareBoardEmail = async (
     data: ShareBoardEmailData
 ): Promise<void> => {
-    if (!transporter) {
-        console.warn('⚠️ Mail service disabled, skip sending email');
+    if (!ENV.MAIL.RESEND_API_KEY) {
+        console.warn('⚠️ Resend API key missing, skip sending email');
         return;
     }
 
     const { subject, html } = generateShareBoardEmail(data);
 
-    await transporter.sendMail({
-        from: `"WhiteBoard App" <${ENV.MAIL.MAIL_USER}>`,
+    await resend.emails.send({
+        from: 'WhiteBoard App <onboarding@resend.dev>',
         to: data.recipientEmail,
         subject,
         html,

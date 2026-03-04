@@ -42,7 +42,8 @@ export const ENV = {
   },
   MAIL: {
     MAIL_USER: process.env.MAIL_USER,
-    MAIL_PASSWORD: process.env.MAIL_PASSWORD
+    MAIL_PASSWORD: process.env.MAIL_PASSWORD,
+    RESEND_API_KEY: process.env.RESEND_API_KEY
   },
   FRONTEND_URL: process.env.FRONTEND_URL
 };
