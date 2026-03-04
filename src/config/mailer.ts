@@ -5,7 +5,9 @@ let transporter: nodemailer.Transporter | null = null;
 
 if (ENV.MAIL.MAIL_USER && ENV.MAIL.MAIL_PASSWORD) {
     transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
         auth: {
             user: ENV.MAIL.MAIL_USER,
             pass: ENV.MAIL.MAIL_PASSWORD,
