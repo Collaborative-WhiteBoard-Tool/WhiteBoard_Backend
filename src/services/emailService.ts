@@ -4,7 +4,7 @@ import { generateShareBoardEmail, ShareBoardEmailData } from '../utils/emailTemp
 export const sendShareBoardEmail = async (data: ShareBoardEmailData): Promise<void> => {
     const apiKey = ENV.MAIL.RESEND_API_KEY;
     if (!apiKey) {
-        console.warn('⚠️ SendGrid API key missing');
+        console.warn('⚠️ SendGrid API key missing!!');
         return;
     }
 
