@@ -1,17 +1,19 @@
-import { Resend } from 'resend';
+
 import { ENV } from '../config/env.js';
 import { generateShareBoardEmail, ShareBoardEmailData } from '../utils/emailTemplates.js';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendShareBoardEmail = async (
     data: ShareBoardEmailData
 ): Promise<void> => {
-    if (!ENV.MAIL.RESEND_API_KEY) {
+    const apiKey = ENV.MAIL.RESEND_API_KEY;
+
+    if (!apiKey) {
         console.warn('⚠️ Resend API key missing, skip sending email');
         return;
     }
 
+    const { Resend } = await import('resend');
+    const resend = new Resend(apiKey);
     const { subject, html } = generateShareBoardEmail(data);
 
     await resend.emails.send({
