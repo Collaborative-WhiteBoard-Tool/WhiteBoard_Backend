@@ -14,6 +14,7 @@ export const sendShareBoardEmail = async (
 
     const { Resend } = await import('resend');
     const resend = new Resend(apiKey);
+    console.log('mailKey:', resend.apiKeys.list())
     const { subject, html } = generateShareBoardEmail(data);
 
     await resend.emails.send({
