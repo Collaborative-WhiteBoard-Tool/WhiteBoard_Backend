@@ -1,19 +1,19 @@
 import { ENV } from '../config/env.js';
-import { transporter } from '../config/mailer.js';
 import { generateShareBoardEmail, ShareBoardEmailData } from '../utils/emailTemplates.js';
 
-export const sendShareBoardEmail = async (
-    data: ShareBoardEmailData
-): Promise<void> => {
-    if (!transporter) {
-        console.warn('⚠️ Mail service disabled, skip sending email');
+export const sendShareBoardEmail = async (data: ShareBoardEmailData): Promise<void> => {
+    const apiKey = ENV.MAIL.RESEND_API_KEY;
+    if (!apiKey) {
+        console.warn('⚠️ SendGrid API key missing');
         return;
     }
 
+    const sgMail = (await import('@sendgrid/mail')).default;
+    sgMail.setApiKey(apiKey);
     const { subject, html } = generateShareBoardEmail(data);
 
-    await transporter.sendMail({
-        from: `"WhiteBoard App" <${ENV.MAIL.MAIL_USER}>`,
+    await sgMail.send({
+        from: 'kuidndjj@gmail.com',
         to: data.recipientEmail,
         subject,
         html,
