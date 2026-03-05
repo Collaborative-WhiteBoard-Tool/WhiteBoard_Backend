@@ -13,7 +13,7 @@ export const sendShareBoardEmail = async (data: ShareBoardEmailData): Promise<vo
     const { subject, html } = generateShareBoardEmail(data);
 
     await sgMail.send({
-        from: 'kuidndjj@gmail.com',
+        from: `WhiteBoard App <${ENV.MAIL.MAIL_USER}>`,
         to: data.recipientEmail,
         subject,
         html,

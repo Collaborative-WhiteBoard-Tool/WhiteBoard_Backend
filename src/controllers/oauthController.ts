@@ -53,7 +53,7 @@ export const googleCallback = async (
 
         // Redirect to frontend success page
         const frontendUrl = ENV.FRONTEND_URL;
-        res.redirect(`${frontendUrl}/auth/google/success?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}`);
+        res.redirect(`${frontendUrl}/auth/google/success`);
     } catch (error) {
         console.error('❌ Google callback error:', error);
 
