@@ -3,7 +3,6 @@ import AppError from "../../utils/appError.js";
 import { verifyAccessToken } from "../../utils/auth.js";
 
 export const protect = (req: Request, res: Response, next: NextFunction) => {
-    // Đọc token từ cookie HOẶC Authorization header
     const accessToken = req.cookies?.accessToken
         || req.headers.authorization?.replace('Bearer ', '');
 
@@ -13,6 +12,9 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const decoded = verifyAccessToken(accessToken);
+        if (!decoded) {
+            return next(new AppError('INVALID_TOKEN'));
+        }
         req.user = decoded;
         next();
     } catch (error) {

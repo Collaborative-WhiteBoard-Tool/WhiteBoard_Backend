@@ -122,7 +122,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
         });
 
         return res.status(200).json(
-            ApiResponse.success("TOKEN_REFRESHED", { userId })
+            ApiResponse.success("TOKEN_REFRESHED", { userId, accessToken, refreshToken })
         );
     } catch (error) {
         // Nếu lỗi, xóa sạch cookies cũ để ép user login lại
