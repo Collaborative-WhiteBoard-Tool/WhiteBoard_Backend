@@ -36,7 +36,7 @@ export const googleCallback = async (
         const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'none' as const,
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
         };
 
         res.cookie('accessToken', result.accessToken, {
