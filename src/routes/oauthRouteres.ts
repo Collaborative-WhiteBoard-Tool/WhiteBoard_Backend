@@ -15,7 +15,7 @@ router.get(
     passport.authenticate('google', {
         scope: ['profile', 'email'],
         session: false,
-        prompt: 'select_account'
+        prompt: 'select_account consent'
     })
 );
 
